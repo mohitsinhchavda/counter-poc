@@ -1,25 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 function App() {
+  const [count, setCount] = useState(0);
+
+  const isInitialCount = useMemo(() => count === 0, [count]);
+
+  const [isCounterRunning, setIsCounterRunning] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (isCounterRunning) {
+      timer = setInterval(() => {
+        setCount((prevCount) => prevCount + 1);
+      }, 1000);
+    }
+    return () => {
+      if(timer){
+        clearInterval(timer);
+      }
+    };
+  }, [isCounterRunning]);
+
+  const onStartPauseOrResumeBtn = useCallback(() => {
+    setIsCounterRunning((prevIsCounterRunning) => !prevIsCounterRunning);
+  }, []);
+
+  const onClickReset = useCallback(() => {
+    setIsCounterRunning(() => false);
+    setCount(() => 0);
+  }, []);
+
+  const btnText = useMemo(() => {
+    return isCounterRunning ? 'Pause' : isInitialCount ? 'Start' : 'Resume'
+  }, [isCounterRunning, isInitialCount]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div>
+        <div>
+          Count: <span>{count}</span>
+        </div>
+
+        <div>
+          <button onClick={onStartPauseOrResumeBtn}>
+            {btnText}
+          </button>
+          <button disabled={isInitialCount} onClick={onClickReset}>
+            Reset
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
 
 export default App;
+
